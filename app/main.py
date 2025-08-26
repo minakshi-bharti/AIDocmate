@@ -87,6 +87,8 @@ async def upload_document(
         )
         extracted_text = clean_extracted_text(text)
         print(f"[upload] extracted length = {len(extracted_text or '')}")
+        if extracted_text:
+            print(f"[upload] first 100 chars: {extracted_text[:100]}...")
         
         if not extracted_text:
             extracted_text = "Could not extract text."
