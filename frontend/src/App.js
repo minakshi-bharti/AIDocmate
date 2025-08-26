@@ -7,10 +7,10 @@ function App() {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [extractedText, setExtractedText] = useState('');
+  const [, setExtractedText] = useState('');
   const fileInputRef = useRef(null);
 
-  const API_BASE = 'http://127.0.0.1:8000';
+  const API_BASE = '';
 
   const handleFileUpload = async (file) => {
     if (!file) return;
