@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚀 AIDocMate - AI-Powered Document Simplification
 
 > **Transform complex documents into simple, actionable insights with the power of AI**
@@ -184,3 +185,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Made with ❤️ for the hackathon community**
 
 *Transform your documents, transform your understanding!* 
+=======
+# AIDocmate
+AIDocMate is an AI-powered assistant that simplifies government and legal documents. Built with qRaptor, it explains forms in simple language, guides step-by-step form filling, generates document checklists, suggests eligible schemes, and ensures privacy—empowering citizens to complete processes independently.
+>>>>>>> 0c8dcfebf0074d0e6fd9d195b2ca1dccf3982133
