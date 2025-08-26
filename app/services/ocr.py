@@ -12,6 +12,14 @@ except Exception:
 from PIL import Image
 import pytesseract
 
+# Text-based PDF extraction (no OCR)
+try:
+	from pypdf import PdfReader  # type: ignore
+	_has_pypdf = True
+except Exception:
+	PdfReader = None  # type: ignore
+	_has_pypdf = False
+
 try:
 	from google.cloud import vision
 	_has_vision = True
@@ -93,22 +101,27 @@ def extract_text_from_file(file_bytes: bytes, filename: str, use_vision: bool = 
 			return _tesseract_ocr_image(image, language_hint)
 
 	if ext in SUPPORTED_PDF_EXTENSIONS:
-		try:
-			images = _render_pdf_to_images(file_bytes)
-		except Exception:
-			# PDF support unavailable or failed
-			return ""
-		page_texts: List[str] = []
-		for img in images:
-			if use_vision:
-				buf = io.BytesIO()
-				img.save(buf, format="PNG")
-				try:
-					page_texts.append(_vision_ocr_image_bytes(buf.getvalue(), language_hint))
-				except Exception:
-					page_texts.append(_tesseract_ocr_image(img, language_hint))
-			else:
-				page_texts.append(_tesseract_ocr_image(img, language_hint))
-		return "\n\n".join(page_texts).strip()
+		# 1) Try direct text extraction using pypdf (works for digital PDFs)
+		if _has_pypdf:
+			try:
+				reader = PdfReader(io.BytesIO(file_bytes))
+				text_parts: List[str] = []
+				for page in reader.pages:
+					try:
+						page_text = page.extract_text() or ""
+					except Exception:
+						page_text = ""
+					if page_text:
+						text_parts.append(page_text)
+				text = "\n".join(text_parts).strip()
+				print(f"[extract_text_from_file] PDF text length (pypdf) = {len(text)}")
+				if text:
+					return text
+			except Exception:
+				# fall through
+				pass
+
+		# 2) Friendly message when no extractable text is found
+		return "No extractable text found in this PDF. It may be a scanned image."
 
 	raise ValueError(f"Unsupported file type: {ext}") 

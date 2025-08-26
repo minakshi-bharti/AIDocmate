@@ -10,3 +10,4 @@ openai==1.43.0
 python-multipart==0.0.12
 pytest==8.3.2
 requests==2.32.3 
+pypdf==5.0.0
