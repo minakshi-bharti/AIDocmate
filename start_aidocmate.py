@@ -36,14 +36,10 @@ def main():
     print("🚀 Starting AIDocMate...")
     print("=" * 50)
     
-    # Check if frontend is built
+    # Check if frontend is built; warn but do not exit in server environments
     if not check_frontend_build():
-        print("\n💡 To build the frontend:")
-        print("   1. cd frontend")
-        print("   2. npm install")
-        print("   3. npm run build")
-        print("   4. Run this script again")
-        return
+        print("\n⚠️  Continuing without frontend build. Backend API will still run.")
+        print("   You can build the frontend separately: 'cd frontend && npm install && npm run build'")
     
     # Check environment variables
     print("\n🔑 Environment Check:")
