@@ -172,13 +172,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/aidocmate/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/aidocmate/discussions)
-- **Email**: your.email@example.com
+- **Issues**: [GitHub Issues](https://github.com/minakshi-bharti/aidocmate/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/minakshi-bharti/aidocmate/discussions)
+- **Email**: minakshibharti30@gmail.com.com
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/aidocmate&type=Date)](https://star-history.com/#yourusername/aidocmate&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=minakshi-bharti/aidocmate&type=Date)](https://star-history.com/#minakshi-bharti/aidocmate&Date)
 
 ---
 
