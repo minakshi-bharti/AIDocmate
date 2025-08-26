@@ -50,20 +50,44 @@ def _chat(messages: List[dict], response_format: Optional[str] = None, temperatu
 		raise RuntimeError("OpenAI client not available. Set OPENAI_API_KEY environment variable.")
 	
 	print(f"[llm._chat] invoking OpenAI with {len(messages)} messages")
+	print(f"[llm._chat] model: {_openai_model}")
+	print(f"[llm._chat] temperature: {temperature}")
 	print(f"[llm._chat] first 100 chars of user message: {messages[-1]['content'][:100]}...")
 	
 	try:
+		print(f"[llm._chat] Making OpenAI API call...")
 		completion = client.chat.completions.create(
 			model=_openai_model,
 			messages=messages,
 			temperature=temperature,
 		)
 		content = completion.choices[0].message.content or ""
+		print(f"[llm._chat] API call successful!")
 		print(f"[llm._chat] response length = {len(content)}")
 		print(f"[llm._chat] first 100 chars of response: {content[:100]}...")
 		return content
 	except Exception as e:
-		print(f"[llm._chat] OpenAI API call failed: {e}")
+		print(f"[llm._chat] OpenAI API call failed!")
+		print(f"[llm._chat] Error type: {type(e).__name__}")
+		print(f"[llm._chat] Error message: {e}")
+		print(f"[llm._chat] Full error details: {str(e)}")
+		
+		# Try with a fallback model if the main one fails
+		if "gpt-4o-mini" in _openai_model and "gpt-3.5-turbo" not in _openai_model:
+			print(f"[llm._chat] Trying fallback model: gpt-3.5-turbo")
+			try:
+				completion = client.chat.completions.create(
+					model="gpt-3.5-turbo",
+					messages=messages,
+					temperature=temperature,
+				)
+				content = completion.choices[0].message.content or ""
+				print(f"[llm._chat] Fallback model successful!")
+				print(f"[llm._chat] response length = {len(content)}")
+				return content
+			except Exception as fallback_error:
+				print(f"[llm._chat] Fallback model also failed: {fallback_error}")
+		
 		raise
 
 
@@ -86,8 +110,9 @@ def simplify_text_with_llm(text: str, language: str = "en", reading_level: str =
 		print(f"[llm.simplify] success - result length: {len(result.text)}")
 		return result
 	except Exception as e:
-		print(f"[llm.simplify] OpenAI API failed: {e}")
-		return SimplifyResponse(language=language, reading_level=reading_level, text="The AI service could not process this request. Please try again later.")
+		error_msg = f"OpenAI API failed: {type(e).__name__} - {str(e)}"
+		print(f"[llm.simplify] {error_msg}")
+		return SimplifyResponse(language=language, reading_level=reading_level, text=f"AI processing failed: {type(e).__name__}. Please check your API key and try again.")
 
 
 def generate_checklist_with_llm(text: str, document_type: Optional[str] = None, context: Optional[str] = None) -> ChecklistResponse:
@@ -127,8 +152,9 @@ def generate_checklist_with_llm(text: str, document_type: Optional[str] = None, 
 			print(f"[llm.checklist] fallback success - 1 item")
 			return result
 	except Exception as e:
-		print(f"[llm.checklist] OpenAI API failed: {e}")
-		return ChecklistResponse(items=[ChecklistItem(name="Error", description="The AI service could not process this request. Please try again later.", mandatory=True, copies=1)])
+		error_msg = f"OpenAI API failed: {type(e).__name__} - {str(e)}"
+		print(f"[llm.checklist] {error_msg}")
+		return ChecklistResponse(items=[ChecklistItem(name="Error", description=f"AI processing failed: {type(e).__name__}. Please check your API key and try again.", mandatory=True, copies=1)])
 
 
 def explain_notice_with_llm(text: str, language: str = "en") -> ExplainNoticeResponse:
@@ -162,8 +188,9 @@ def explain_notice_with_llm(text: str, language: str = "en") -> ExplainNoticeRes
 		print(f"[llm.explain] success - {len(steps)} steps, {len(actions)} actions")
 		return result
 	except Exception as e:
-		print(f"[llm.explain] OpenAI API failed: {e}")
-		return ExplainNoticeResponse(language=language, steps=["The AI service could not process this request. Please try again later."], next_actions=[])
+		error_msg = f"OpenAI API failed: {type(e).__name__} - {str(e)}"
+		print(f"[llm.explain] {error_msg}")
+		return ExplainNoticeResponse(language=language, steps=[f"AI processing failed: {type(e).__name__}. Please check your API key and try again."], next_actions=[])
 
 
 def translate_text_with_llm(text: str, target_language: str = "hi") -> str:
@@ -184,5 +211,6 @@ def translate_text_with_llm(text: str, target_language: str = "hi") -> str:
 		print(f"[llm.translate] success - result length: {len(result)}")
 		return result
 	except Exception as e:
-		print(f"[llm.translate] OpenAI API failed: {e}")
-		return "The AI service could not process this request. Please try again later."
+		error_msg = f"OpenAI API failed: {type(e).__name__} - {str(e)}"
+		print(f"[llm.translate] {error_msg}")
+		return f"AI processing failed: {type(e).__name__}. Please check your API key and try again."
