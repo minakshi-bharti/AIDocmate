@@ -32,7 +32,10 @@ app.add_middleware(
 )
 
 # Mount static files from the React build
-build_path = Path(__file__).parent.parent.parent / "frontend" / "build"
+# Try inner project path first, then fallback to parent (for different repo layouts)
+_inner_build_path = Path(__file__).parent.parent / "frontend" / "build"
+_outer_build_path = Path(__file__).parent.parent.parent / "frontend" / "build"
+build_path = _inner_build_path if _inner_build_path.exists() else _outer_build_path
 if build_path.exists():
     app.mount("/static", StaticFiles(directory=str(build_path / "static")), name="static")
 
