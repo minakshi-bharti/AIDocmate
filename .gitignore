@@ -92,7 +92,10 @@ service-account-key.json
 
 # Google Cloud
 .gcloud/
-*.json
+# Keep credentials out of git but allow project JSON files like package.json
+secrets.json
+credentials.json
+service-account-key.json
 
 # OpenAI
 openai_key.txt
