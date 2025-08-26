@@ -23,62 +23,103 @@ from app.models.schemas import SimplifyResponse, ChecklistItem, ChecklistRespons
 def _chat(messages: List[dict], response_format: Optional[str] = None, temperature: float = 0.2) -> str:
 	if not _client:
 		raise RuntimeError("OpenAI client not available. Set OPENAI_API_KEY environment variable.")
+	print(f"[llm._chat] invoking OpenAI with {len(messages)} messages")
 	completion = _client.chat.completions.create(
 		model=_openai_model,
 		messages=messages,
 		temperature=temperature,
 	)
-	return completion.choices[0].message.content or ""
+	content = completion.choices[0].message.content or ""
+	print(f"[llm._chat] response length = {len(content)}")
+	return content
 
 
 def simplify_text_with_llm(text: str, language: str = "en", reading_level: str = "basic", use_bullets: bool = True) -> SimplifyResponse:
-	messages = build_simplify_messages(text=text, language=language, reading_level=reading_level, use_bullets=use_bullets)
-	content = _chat(messages)
-	return SimplifyResponse(
-		language=language,
-		reading_level=reading_level,
-		text=content.strip(),
-	)
+	if not text or not text.strip():
+		return SimplifyResponse(language=language, reading_level=reading_level, text="No text available for processing.")
+	try:
+		print(f"[llm.simplify] input length = {len(text)}")
+		messages = build_simplify_messages(text=text, language=language, reading_level=reading_level, use_bullets=use_bullets)
+		content = _chat(messages)
+		return SimplifyResponse(
+			language=language,
+			reading_level=reading_level,
+			text=(content or "").strip(),
+		)
+	except Exception as e:
+		print(f"[llm.simplify] error: {e}")
+		return SimplifyResponse(language=language, reading_level=reading_level, text="Unable to process request. Please try again.")
 
 
 def generate_checklist_with_llm(text: str, document_type: Optional[str] = None, context: Optional[str] = None) -> ChecklistResponse:
-	messages = build_checklist_messages(text=text, document_type=document_type, context=context)
-	content = _chat(messages)
-	# Expect JSON; attempt to parse; if fails, return as free text item
-	items: List[ChecklistItem] = []
+	if not text or not text.strip():
+		return ChecklistResponse(items=[ChecklistItem(name="Info", description="No text available for processing.", mandatory=True, copies=1)])
 	try:
-		payload = json.loads(content)
-		for raw in payload.get("items", []):
-			items.append(ChecklistItem(
-				name=raw.get("name", ""),
-				description=raw.get("description"),
-				mandatory=bool(raw.get("mandatory", True)),
-				source=raw.get("source"),
-				copies=int(raw.get("copies", 1)),
-				notes=raw.get("notes"),
-			))
-		return ChecklistResponse(items=items, raw=content)
-	except Exception:
-		# Fallback: wrap the entire content as one item
-		items.append(ChecklistItem(name="Checklist", description=content.strip(), mandatory=True, copies=1))
-		return ChecklistResponse(items=items, raw=content)
+		print(f"[llm.checklist] input length = {len(text)}")
+		messages = build_checklist_messages(text=text, document_type=document_type, context=context)
+		content = _chat(messages)
+		print(f"[llm.checklist] raw response length = {len(content)}")
+		# Expect JSON; attempt to parse; if fails, return as free text item
+		items: List[ChecklistItem] = []
+		try:
+			payload = json.loads(content)
+			for raw in payload.get("items", []):
+				items.append(ChecklistItem(
+					name=raw.get("name", ""),
+					description=raw.get("description"),
+					mandatory=bool(raw.get("mandatory", True)),
+					source=raw.get("source"),
+					copies=int(raw.get("copies", 1)),
+					notes=raw.get("notes"),
+				))
+			return ChecklistResponse(items=items, raw=content)
+		except Exception:
+			# Fallback: wrap the entire content as one item
+			items.append(ChecklistItem(name="Checklist", description=(content or "").strip(), mandatory=True, copies=1))
+			return ChecklistResponse(items=items, raw=content)
+	except Exception as e:
+		print(f"[llm.checklist] error: {e}")
+		return ChecklistResponse(items=[ChecklistItem(name="Error", description="Unable to process request. Please try again.", mandatory=True, copies=1)])
 
 
 def explain_notice_with_llm(text: str, language: str = "en") -> ExplainNoticeResponse:
-	messages = build_explain_notice_messages(text=text, language=language)
-	content = _chat(messages)
-	# Heuristic parse into steps and next actions
-	lines = [line.strip("-• ").strip() for line in content.splitlines() if line.strip()]
-	steps: List[str] = []
-	actions: List[str] = []
-	in_actions = False
-	for line in lines:
-		lower = line.lower()
-		if lower.startswith("next steps") or lower.startswith("what to do") or lower.startswith("actions"):
-			in_actions = True
-			continue
-		if in_actions:
-			actions.append(line)
-		else:
-			steps.append(line)
-	return ExplainNoticeResponse(language=language, steps=steps, next_actions=actions) 
+	if not text or not text.strip():
+		return ExplainNoticeResponse(language=language, steps=["No text available for processing."], next_actions=[])
+	try:
+		print(f"[llm.explain] input length = {len(text)}")
+		messages = build_explain_notice_messages(text=text, language=language)
+		content = _chat(messages)
+		# Heuristic parse into steps and next actions
+		lines = [line.strip("-• ").strip() for line in (content or "").splitlines() if line.strip()]
+		steps: List[str] = []
+		actions: List[str] = []
+		in_actions = False
+		for line in lines:
+			lower = line.lower()
+			if lower.startswith("next steps") or lower.startswith("what to do") or lower.startswith("actions"):
+				in_actions = True
+				continue
+			if in_actions:
+				actions.append(line)
+			else:
+				steps.append(line)
+		return ExplainNoticeResponse(language=language, steps=steps, next_actions=actions)
+	except Exception as e:
+		print(f"[llm.explain] error: {e}")
+		return ExplainNoticeResponse(language=language, steps=["Unable to process request. Please try again."], next_actions=[])
+
+
+def translate_text_with_llm(text: str, target_language: str = "hi") -> str:
+	if not text or not text.strip():
+		return "No text available for processing."
+	try:
+		print(f"[llm.translate] input length = {len(text)} target={target_language}")
+		messages = [
+			{"role": "system", "content": "You are a helpful translator. Translate the user's input into the requested target language without adding extra commentary."},
+			{"role": "user", "content": f"Translate the following text into {target_language}.\n\n{text}"},
+		]
+		content = _chat(messages)
+		return (content or "").strip()
+	except Exception as e:
+		print(f"[llm.translate] error: {e}")
+		return "Unable to process request. Please try again."

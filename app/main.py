@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from app.services.ocr import extract_text_from_file
-from app.services.llm import simplify_text_with_llm, generate_checklist_with_llm, explain_notice_with_llm
+from app.services.llm import simplify_text_with_llm, generate_checklist_with_llm, explain_notice_with_llm, translate_text_with_llm
 from app.services.translate import translate_text_with_provider
 from app.utils.cleaning import clean_extracted_text
 from app.models.schemas import SimplifyRequest, SimplifyResponse, TranslateRequest, TranslateResponse, ChecklistRequest, ChecklistResponse, UploadResponse, ExplainNoticeRequest, ExplainNoticeResponse, ChecklistItem
@@ -86,6 +86,7 @@ async def upload_document(
             language_hint=language_hint,
         )
         extracted_text = clean_extracted_text(text)
+        print(f"[upload] extracted length = {len(extracted_text or '')}")
         
         if not extracted_text:
             extracted_text = "Could not extract text."
@@ -147,10 +148,9 @@ async def translate_document(request: TranslateRequest):
     Translate document text to target language
     """
     try:
-        translated_text, provider = translate_text_with_provider(
-            text=request.text,
-            target_language=request.target_language,
-        )
+        # Prefer LLM-based translation when OpenAI is configured; fallback to provider
+        translated_text = translate_text_with_llm(text=request.text, target_language=request.target_language)
+        provider = "openai"
         
         if not translated_text:
             return {
