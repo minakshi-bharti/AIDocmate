@@ -57,9 +57,13 @@ def main():
     else:
         print("   ⚠️  GOOGLE_APPLICATION_CREDENTIALS not set (Vision/Translate will use fallbacks)")
     
+    port = int(os.getenv("PORT", "8000"))
+    host = os.getenv("HOST", "0.0.0.0")
+    reload_enabled = os.getenv("RELOAD", "false").lower() in {"1", "true", "yes"}
+
     print("\n🌐 Starting AIDocMate API Server...")
-    print("   Frontend will be served at: http://127.0.0.1:8000")
-    print("   API docs will be at: http://127.0.0.1:8000/docs")
+    print(f"   Listening on: http://{host}:{port}")
+    print(f"   API docs: http://{host}:{port}/docs")
     print("   Press Ctrl+C to stop the server")
     print("=" * 50)
     
@@ -67,9 +71,9 @@ def main():
         # Start the FastAPI server
         uvicorn.run(
             "app.main:app",
-            host="127.0.0.1",
-            port=8000,
-            reload=True,
+            host=host,
+            port=port,
+            reload=reload_enabled,
             log_level="info"
         )
     except KeyboardInterrupt:

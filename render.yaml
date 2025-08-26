@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: aidocmate
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      npm ci --prefix frontend
+      npm run build --prefix frontend
+    startCommand: python start_aidocmate.py
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        sync: false
+      - key: GOOGLE_PROJECT_ID
+        sync: false
+      - key: GOOGLE_TRANSLATE_LOCATION
+        value: global
