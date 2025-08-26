@@ -1,0 +1,13 @@
+﻿{
+    "items":  [
+                  {
+                      "name":  "Checklist unavailable",
+                      "description":  "We couldn\u0027t generate a checklist now. Please try again.",
+                      "mandatory":  true,
+                      "source":  null,
+                      "copies":  1,
+                      "notes":  null
+                  }
+              ],
+    "raw":  null
+}

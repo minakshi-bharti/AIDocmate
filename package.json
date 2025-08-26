@@ -1,8 +1,0 @@
-{
-  "name": "aidocmate-root",
-  "private": true,
-  "version": "0.0.1",
-  "scripts": {
-    "build": "npm ci --prefix frontend && npm run build --prefix frontend"
-  }
-}
