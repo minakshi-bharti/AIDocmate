@@ -15,14 +15,26 @@ _client = None
 def _get_openai_client():
 	"""Get or create OpenAI client with current API key"""
 	global _client
+	print(f"[llm] _get_openai_client() called")
+	
+	# Check if OpenAI module is available
+	if OpenAI is None:
+		print("[llm] ERROR: OpenAI module not available")
+		return None
+	
 	api_key = os.getenv("OPENAI_API_KEY")
 	print(f"[llm] Checking OPENAI_API_KEY: {'SET' if api_key else 'NOT SET'}")
 	if api_key:
 		print(f"[llm] API key length: {len(api_key)}")
 		print(f"[llm] API key preview: {api_key[:10]}...")
-	
-	if not api_key:
+		print(f"[llm] API key starts with 'sk-': {api_key.startswith('sk-')}")
+	else:
 		print("[llm] OPENAI_API_KEY not set")
+		print(f"[llm] All environment variables: {list(os.environ.keys())}")
+		# Try to find any key that might contain 'openai' or 'api'
+		for key in os.environ.keys():
+			if 'openai' in key.lower() or 'api' in key.lower():
+				print(f"[llm] Found related env var: {key} = {os.environ[key][:10]}...")
 		return None
 	
 	try:
@@ -36,6 +48,7 @@ def _get_openai_client():
 	except Exception as e:
 		print(f"[llm] Failed to initialize OpenAI client: {e}")
 		print(f"[llm] Error type: {type(e).__name__}")
+		print(f"[llm] Error details: {str(e)}")
 		_client = None
 		return None
 
@@ -47,7 +60,18 @@ from app.models.schemas import SimplifyResponse, ChecklistItem, ChecklistRespons
 def _chat(messages: List[dict], response_format: Optional[str] = None, temperature: float = 0.2) -> str:
 	client = _get_openai_client()
 	if not client:
-		raise RuntimeError("OpenAI client not available. Set OPENAI_API_KEY environment variable.")
+		# Provide more detailed error information
+		api_key = os.getenv("OPENAI_API_KEY")
+		error_msg = f"OpenAI client not available. "
+		if not api_key:
+			error_msg += "OPENAI_API_KEY environment variable is not set."
+		elif OpenAI is None:
+			error_msg += "OpenAI module failed to import."
+		else:
+			error_msg += "Client initialization failed."
+		
+		print(f"[llm._chat] {error_msg}")
+		raise RuntimeError(error_msg)
 	
 	print(f"[llm._chat] invoking OpenAI with {len(messages)} messages")
 	print(f"[llm._chat] model: {_openai_model}")
@@ -214,3 +238,35 @@ def translate_text_with_llm(text: str, target_language: str = "hi") -> str:
 		error_msg = f"OpenAI API failed: {type(e).__name__} - {str(e)}"
 		print(f"[llm.translate] {error_msg}")
 		return f"AI processing failed: {type(e).__name__}. Please check your API key and try again."
+
+
+def test_environment():
+	"""Test function to debug environment variable issues"""
+	print("=== LLM Environment Test ===")
+	print(f"OpenAI module available: {OpenAI is not None}")
+	print(f"OpenAI model: {_openai_model}")
+	
+	api_key = os.getenv("OPENAI_API_KEY")
+	print(f"OPENAI_API_KEY set: {bool(api_key)}")
+	if api_key:
+		print(f"API key length: {len(api_key)}")
+		print(f"API key preview: {api_key[:10]}...")
+		print(f"API key starts with 'sk-': {api_key.startswith('sk-')}")
+	
+	# Test client creation
+	try:
+		client = _get_openai_client()
+		if client:
+			print("✅ OpenAI client created successfully")
+		else:
+			print("❌ OpenAI client creation failed")
+	except Exception as e:
+		print(f"❌ Error creating client: {e}")
+	
+	print("=== End Test ===")
+	return {
+		"openai_available": OpenAI is not None,
+		"api_key_set": bool(api_key),
+		"api_key_length": len(api_key) if api_key else 0,
+		"client_created": _get_openai_client() is not None
+	}

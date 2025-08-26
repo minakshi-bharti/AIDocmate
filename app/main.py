@@ -287,6 +287,24 @@ async def test_llm():
         }
 
 
+@app.get("/debug/llm-env")
+async def debug_llm_environment():
+    """Debug endpoint to test LLM environment directly"""
+    try:
+        from app.services.llm import test_environment
+        result = test_environment()
+        return {
+            "status": "success",
+            "test_results": result
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "error_type": type(e).__name__
+        }
+
+
 @app.get("/debug/simple")
 async def debug_simple():
     """Simple debug endpoint to test basic functionality"""
