@@ -16,17 +16,26 @@ def _get_openai_client():
 	"""Get or create OpenAI client with current API key"""
 	global _client
 	api_key = os.getenv("OPENAI_API_KEY")
+	print(f"[llm] Checking OPENAI_API_KEY: {'SET' if api_key else 'NOT SET'}")
+	if api_key:
+		print(f"[llm] API key length: {len(api_key)}")
+		print(f"[llm] API key preview: {api_key[:10]}...")
+	
 	if not api_key:
 		print("[llm] OPENAI_API_KEY not set")
 		return None
 	
 	try:
 		if _client is None:
+			print(f"[llm] Creating new OpenAI client with model: {_openai_model}")
 			_client = OpenAI(api_key=api_key)
-			print(f"[llm] OpenAI client initialized with model: {_openai_model}")
+			print(f"[llm] OpenAI client initialized successfully")
+		else:
+			print(f"[llm] Using existing OpenAI client")
 		return _client
 	except Exception as e:
 		print(f"[llm] Failed to initialize OpenAI client: {e}")
+		print(f"[llm] Error type: {type(e).__name__}")
 		_client = None
 		return None
 

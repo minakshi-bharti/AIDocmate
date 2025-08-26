@@ -244,6 +244,48 @@ async def explain_notice(request: ExplainNoticeRequest):
             "urgency_level": "unknown",
         }
 
+@app.get("/debug/openai")
+async def debug_openai():
+    """Debug endpoint to check OpenAI configuration"""
+    api_key = os.getenv("OPENAI_API_KEY")
+    api_key_length = len(api_key) if api_key else 0
+    api_key_preview = f"{api_key[:10]}..." if api_key and len(api_key) > 10 else "None"
+    
+    # Test LLM service initialization
+    try:
+        from app.services.llm import _get_openai_client
+        client = _get_openai_client()
+        client_status = "Available" if client else "Not Available"
+    except Exception as e:
+        client_status = f"Error: {e}"
+    
+    return {
+        "openai_api_key_set": bool(api_key),
+        "api_key_length": api_key_length,
+        "api_key_preview": api_key_preview,
+        "llm_client_status": client_status,
+        "environment": os.getenv("ENVIRONMENT", "development")
+    }
+
+
+@app.get("/debug/test-llm")
+async def test_llm():
+    """Test endpoint to verify LLM service works"""
+    try:
+        from app.services.llm import simplify_text_with_llm
+        result = simplify_text_with_llm("This is a test message to verify OpenAI integration.")
+        return {
+            "status": "success",
+            "result": result.text,
+            "result_length": len(result.text)
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "error_type": type(e).__name__
+        }
+
 if __name__ == "__main__":
     import uvicorn
     print("\n🚀 AIDocMate API running at http://127.0.0.1:8000\n")
