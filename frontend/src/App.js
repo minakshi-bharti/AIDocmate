@@ -274,23 +274,7 @@ function App() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden border">
-                <img
-                  src="/logo.jpg"
-                  alt="Logo"
-                  className="w-10 h-10 object-cover"
-                  onError={(e) => {
-                    // Fallback to icon if logo is not found
-                    e.currentTarget.style.display = 'none';
-                    const fallback = document.createElement('div');
-                    fallback.className = 'w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center';
-                    const container = e.currentTarget.parentElement;
-                    if (container) {
-                      container.appendChild(fallback);
-                      // Render a simple SVG fallback icon
-                      fallback.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2a2 2 0 0 0-2 2v16.764a.5.5 0 0 0 .79.407L8.5 19l3.5 2.5 3.5-2.5 3.71 2.171A.5.5 0 0 0 20 20.764V4a2 2 0 0 0-2-2H6zm2 5h8a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2zm0 4h8a1 1 0 1 1 0 2H8a1 1 0 0 1 0-2z"/></svg>';
-                    }
-                  }}
-                />
+                <img src={require('./assets/logo.jpg')} alt="Logo" className="w-10 h-10 object-cover" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">AiDocmate</h1>
