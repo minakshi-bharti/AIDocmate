@@ -61,7 +61,7 @@ Perfect for students, professionals, and anyone who needs to understand complex 
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/aidocmate.git
+git clone https://github.com/minakshi-bharti/aidocmate.git
 cd aidocmate
 ```
 
@@ -174,7 +174,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/minakshi-bharti/aidocmate/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/minakshi-bharti/aidocmate/discussions)
-- **Email**: minakshibharti30@gmail.com.com
+- **Email**: minakshibharti30@gmail.com
 
 ## 🌟 Star History
 
