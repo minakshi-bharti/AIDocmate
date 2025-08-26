@@ -286,6 +286,24 @@ async def test_llm():
             "error_type": type(e).__name__
         }
 
+
+@app.get("/debug/simple")
+async def debug_simple():
+    """Simple debug endpoint to test basic functionality"""
+    import os
+    test_var = os.getenv("TEST_VAR", "NOT_SET")
+    openai_key = os.getenv("OPENAI_API_KEY", "NOT_SET")
+    
+    return {
+        "test_var": test_var,
+        "openai_api_key_set": openai_key != "NOT_SET",
+        "openai_api_key_length": len(openai_key) if openai_key != "NOT_SET" else 0,
+        "python_version": os.sys.version,
+        "current_working_directory": os.getcwd(),
+        "environment_variables_count": len(os.environ)
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     print("\n🚀 AIDocMate API running at http://127.0.0.1:8000\n")
