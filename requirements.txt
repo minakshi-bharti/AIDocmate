@@ -1,0 +1,12 @@
+fastapi==0.112.2
+uvicorn[standard]==0.30.6
+pydantic==2.9.1
+pytesseract==0.3.13
+pillow==10.4.0
+# pymupdf==1.24.10  # Optional: PDF OCR. Install manually if needed (may fail to build on some Windows setups)
+google-cloud-vision==3.7.4
+google-cloud-translate==3.15.5
+openai==1.43.0
+python-multipart==0.0.12
+pytest==8.3.2
+requests==2.32.3 

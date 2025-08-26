@@ -1,0 +1,174 @@
+version: 1
+name: AIDocMate
+description: "AI assistant for simplifying, translating, and generating checklists from bureaucratic documents."
+logo: "https://example.com/logo.png"
+servers:
+  - id: local
+    url: "http://127.0.0.1:8000"
+
+agents:
+  - id: document_agent
+    name: "Document Agent"
+    server: local
+    endpoint:
+      method: POST
+      path: /upload
+      contentType: multipart/form-data
+    input:
+      fields:
+        - name: file
+          type: file
+          required: true
+        - name: use_vision
+          type: boolean
+          required: false
+        - name: language_hint
+          type: string
+          required: false
+    output:
+      schema:
+        type: object
+        properties:
+          request_id: { type: string }
+          filename: { type: string }
+          text: { type: string }
+      fields:
+        - name: request_id
+          path: $.request_id
+        - name: filename
+          path: $.filename
+        - name: extracted_text
+          path: $.text
+
+  - id: simplify_agent
+    name: "Simplify Agent"
+    server: local
+    endpoint:
+      method: POST
+      path: /simplify
+      contentType: application/json
+    input:
+      schema:
+        type: object
+        required: [text]
+        properties:
+          text: { type: string }
+          language: { type: string, default: "en" }
+          reading_level: { type: string, default: "basic" }
+          use_bullets: { type: boolean, default: true }
+      fields:
+        - name: text
+          type: string
+          required: true
+        - name: language
+          type: string
+          required: false
+          default: "en"
+        - name: reading_level
+          type: string
+          required: false
+          default: "basic"
+        - name: use_bullets
+          type: boolean
+          required: false
+          default: true
+    output:
+      schema:
+        type: object
+        properties:
+          language: { type: string }
+          reading_level: { type: string }
+          text: { type: string }
+      fields:
+        - name: simplified_text
+          path: $.text
+        - name: language
+          path: $.language
+        - name: reading_level
+          path: $.reading_level
+
+  - id: checklist_agent
+    name: "Checklist Agent"
+    server: local
+    endpoint:
+      method: POST
+      path: /checklist
+      contentType: application/json
+    input:
+      schema:
+        type: object
+        required: [text]
+        properties:
+          text: { type: string }
+          document_type: { type: string }
+          context: { type: string }
+      fields:
+        - name: text
+          type: string
+          required: true
+        - name: document_type
+          type: string
+          required: false
+        - name: context
+          type: string
+          required: false
+    output:
+      schema:
+        type: object
+        properties:
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+                mandatory: { type: boolean }
+                copies: { type: integer }
+                source: { type: string }
+                notes: { type: string }
+      fields:
+        - name: checklist
+          path: $.items
+
+  - id: translate_agent
+    name: "Translate Agent"
+    server: local
+    endpoint:
+      method: POST
+      path: /translate
+      contentType: application/json
+    input:
+      schema:
+        type: object
+        required: [text, target_language]
+        properties:
+          text: { type: string }
+          target_language: { type: string }
+      fields:
+        - name: text
+          type: string
+          required: true
+        - name: target_language
+          type: string
+          required: true
+          example: "hi"
+    output:
+      schema:
+        type: object
+        properties:
+          text: { type: string }
+          target_language: { type: string }
+          provider: { type: string }
+      fields:
+        - name: translated_text
+          path: $.text
+        - name: target_language
+          path: $.target_language
+        - name: provider
+          path: $.provider
+
+# Example wiring (documentation-only)
+# Document Agent.extracted_text -> Simplify Agent.text
+# Simplify Agent.simplified_text -> Translate Agent.text
+# Document Agent.extracted_text -> Checklist Agent.text 
